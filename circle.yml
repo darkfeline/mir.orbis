@@ -7,7 +7,7 @@ dependencies:
 test:
   override:
     - pipenv install --dev
-    - pipenv run pytest --junitxml=.pytest/junit.xml
+    - pipenv run python -m pytest --junitxml=.pytest/junit.xml
   post:
     - mv .pytest $CIRCLE_TEST_REPORTS/pytest
     - bash <(curl -s https://codecov.io/bash)
