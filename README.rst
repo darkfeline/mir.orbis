@@ -18,6 +18,13 @@ Hashed file archive.
 
 This facilitates the construction of hard linking files to a hash store.
 
-The name is a reference to Orbis Pictus.
+Example::
 
-Template project for Python projects under Project Mir.
+    $ cd tmp
+    $ touch some-pic.jpg
+    $ mkdir hash
+    $ python3.6 -m mir.orbis.cmd.hash .
+    # Now some-pic.jpg will be linked to
+    # hash/ff/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.jpg
+
+The name is a reference to Orbis Pictus.
