@@ -16,10 +16,10 @@
 
 import argparse
 import logging
-import os
 from pathlib import Path
-import stat
 import sys
+
+from mir.orbis import pictus
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +31,9 @@ def main(args):
 
     logging.basicConfig(level='DEBUG')
 
-    rootdir = _find_rootdir(args.files[0])
-    logger.info('Found root dir %s', rootdir)
-    hashdir = _hashdir(rootdir)
-    _add_files(hashdir, args.files)
+    hashdir = pictus.find_hashdir(args.files[0])
+    logger.info('Found hash dir %s', hashdir)
+    pictus.add_files(hashdir, args.files)
     return 0
 
 

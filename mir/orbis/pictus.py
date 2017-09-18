@@ -29,6 +29,8 @@ logger = logging.getLogger(__name__)
 def find_hashdir(start: 'PathLike') -> Path:
     """Find hash archive directory."""
     path = Path(start).resolve()
+    if path.is_file():
+        path = path.parent
     while True:
         if _HASHDIR in os.listdir(path):
             return path / _HASHDIR

@@ -24,7 +24,15 @@ from mir.orbis import pictus
 
 def test_find_hashdir(tmpdir):
     hashdir = tmpdir.mkdir('hash')
-    start = tmpdir.ensure('foo/bar', dir=True)
+    start = tmpdir.ensure('foo/bar/baz', dir=True)
+
+    got = pictus.find_hashdir(start)
+    assert got == Path(hashdir)
+
+
+def test_find_hashdir_with_file_start(tmpdir):
+    hashdir = tmpdir.mkdir('hash')
+    start = tmpdir.ensure('foo/bar/baz')
 
     got = pictus.find_hashdir(start)
     assert got == Path(hashdir)
