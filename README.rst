@@ -1,17 +1,23 @@
-mir.protology README
-====================
+mir.orbis README
+================
 
-.. image:: https://circleci.com/gh/darkfeline/mir.protology.svg?style=shield
-   :target: https://circleci.com/gh/darkfeline/mir.protology
+.. image:: https://circleci.com/gh/darkfeline/mir.orbis.svg?style=shield
+   :target: https://circleci.com/gh/darkfeline/mir.orbis
    :alt: CircleCI
-.. image:: https://codecov.io/gh/darkfeline/mir.protology/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/darkfeline/mir.protology
+.. image:: https://codecov.io/gh/darkfeline/mir.orbis/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/darkfeline/mir.orbis
    :alt: Codecov
-.. image:: https://badge.fury.io/py/mir.protology.svg
-   :target: https://badge.fury.io/py/mir.protology
+.. image:: https://badge.fury.io/py/mir.orbis.svg
+   :target: https://badge.fury.io/py/mir.orbis
    :alt: PyPI Release
-.. image:: https://readthedocs.org/projects/mir-protology/badge/?version=latest
-   :target: http://mir-protology.readthedocs.io/en/latest/
+.. image:: https://readthedocs.org/projects/mir-orbis/badge/?version=latest
+   :target: http://mir-orbis.readthedocs.io/en/latest/
    :alt: Latest Documentation
+
+Hashed file archive.
+
+This facilitates the construction of hard linking files to a hash store.
+
+The name is a reference to Orbis Pictus.
 
 Template project for Python projects under Project Mir.

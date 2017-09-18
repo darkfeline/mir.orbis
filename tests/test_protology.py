@@ -15,7 +15,7 @@
 import contextlib
 import io
 
-from mir.protology import ahiru
+from mir.orbis import ahiru
 
 
 def test_quack():

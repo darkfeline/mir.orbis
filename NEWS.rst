@@ -1,5 +1,5 @@
-mir.protology Release Notes
-===========================
+mir.orbis Release Notes
+=======================
 
 This project uses `semantic versioning <http://semver.org/>`_.
 
