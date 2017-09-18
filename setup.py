@@ -17,7 +17,7 @@ from setuptools import setup
 setup(
     name='mir.orbis',
     version='0.1.0',
-    description='Distribution template for the mir namespace',
+    description='Hashed file archives',
     long_description='',
     keywords='',
     url='https://github.com/darkfeline/mir.orbis',
