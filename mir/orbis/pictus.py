@@ -63,12 +63,15 @@ def add_file(hashdir: 'PathLike', path: 'PathLike'):
     return without doing anything else.  If it is not the same file,
     raise FileExistsError.
     """
+    logger.info('Adding file %s', path)
     newpath = Path(hashdir) / _hashed_path(path)
     if newpath.exists():
         if newpath.samefile(os.fspath(path)):
+            logger.info('%s already stored to %s', path, newpath)
             return
         else:
             raise FileExistsError(f'{newpath} exists but different from {path}')
+    logger.info('Storing %s to %s', path, newpath)
     newpath.parent.mkdir(exist_ok=True)
     os.link(path, newpath)
 
