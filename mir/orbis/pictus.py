@@ -14,6 +14,7 @@
 
 """Working with hashed archives."""
 
+import filecmp
 import hashlib
 import logging
 import os
@@ -56,12 +57,14 @@ def add_dir(hashdir: 'PathLike', directory: 'PathLike'):
             add_file(hashdir, path)
 
 
-def add_file(hashdir: 'PathLike', path: 'PathLike'):
+def add_file(hashdir: 'PathLike', path: 'PathLike', merge=False):
     """Add a file to a hash archive.
 
     If the file is already in the hash archive and is the same file,
     return without doing anything else.  If it is not the same file,
-    raise FileExistsError.
+    behavior is determined by merge.  If merge is False, raise
+    FileExistsError.  If merge is True, replace the file with a hard
+    link to the file in the hash archive if the content is the same.
     """
     logger.info('Adding file %s', path)
     newpath = Path(hashdir) / _hashed_path(path)
@@ -69,8 +72,11 @@ def add_file(hashdir: 'PathLike', path: 'PathLike'):
         if newpath.samefile(os.fspath(path)):
             logger.info('%s already stored to %s', path, newpath)
             return
-        else:
+        if not (merge and filecmp.cmp(path, newpath, shallow=False)):
             raise FileExistsError(f'{newpath} exists but different from {path}')
+        os.unlink(path)
+        os.link(newpath, path)
+        return
     logger.info('Storing %s to %s', path, newpath)
     newpath.parent.mkdir(exist_ok=True)
     os.link(path, newpath)
