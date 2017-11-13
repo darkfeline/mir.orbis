@@ -40,21 +40,21 @@ def find_hashdir(start: 'PathLike') -> Path:
         path = path.parent
 
 
-def add_all(hashdir: 'PathLike', paths: 'Iterable[PathLike]'):
+def add_all(hashdir: 'PathLike', paths: 'Iterable[PathLike]', merge=False):
     """Add files and directories to a hash archive."""
     for path in paths:
         if os.path.isdir(path):
-            add_dir(hashdir, path)
+            add_dir(hashdir, path, merge=merge)
         else:
-            add_file(hashdir, path)
+            add_file(hashdir, path, merge=merge)
 
 
-def add_dir(hashdir: 'PathLike', directory: 'PathLike'):
+def add_dir(hashdir: 'PathLike', directory: 'PathLike', merge=False):
     """Add a directory's files to a hash archive."""
     for root, dirs, files in os.walk(directory):
         for filename in files:
             path = os.path.join(root, filename)
-            add_file(hashdir, path)
+            add_file(hashdir, path, merge=merge)
 
 
 def add_file(hashdir: 'PathLike', path: 'PathLike', merge=False):
