@@ -67,19 +67,19 @@ def add_file(hashdir: 'PathLike', path: 'PathLike', merge=False):
     link to the file in the hash archive if the content is the same.
     """
     logger.info('Adding file %s', path)
-    newpath = Path(hashdir) / _hashed_path(path)
-    if newpath.exists():
-        if newpath.samefile(os.fspath(path)):
-            logger.info('%s already stored to %s', path, newpath)
-            return
-        if not (merge and filecmp.cmp(path, newpath, shallow=False)):
-            raise FileExistsError(f'{newpath} exists but different from {path}')
-        os.unlink(path)
-        os.link(newpath, path)
+    hashed_path = Path(hashdir, _hashed_path(path))
+    if not hashed_path.exists():
+        logger.info('Storing %s to %s', path, hashed_path)
+        hashed_path.parent.mkdir(exist_ok=True)
+        os.link(path, hashed_path)
         return
-    logger.info('Storing %s to %s', path, newpath)
-    newpath.parent.mkdir(exist_ok=True)
-    os.link(path, newpath)
+    if hashed_path.samefile(os.fspath(path)):
+        logger.info('%s already stored to %s', path, hashed_path)
+        return
+    if not (merge and filecmp.cmp(path, hashed_path, shallow=False)):
+        raise FileExistsError(f'{hashed_path} exists but different from {path}')
+    os.unlink(path)
+    os.link(hashed_path, path)
 
 
 def _hashed_path(path: 'PathLike') -> PurePath:
@@ -87,7 +87,7 @@ def _hashed_path(path: 'PathLike') -> PurePath:
     with open(path, 'rb') as f:
         digest = _hexdigest(f)
     ext = os.path.splitext(path)[1]
-    return PurePath(digest[:2]) / f'{digest[2:]}{ext}'
+    return PurePath(digest[:2], f'{digest[2:]}{ext}')
 
 
 def _hexdigest(file):
