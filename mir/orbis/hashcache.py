@@ -19,9 +19,6 @@ from pathlib import Path
 import sqlite3
 
 
-_SHA256_TABLE = 'sha256_cache'
-
-
 def connect():
     db = _dbpath()
     db.parent.mkdir(parents=True, exist_ok=True)
@@ -31,8 +28,24 @@ def connect():
     return con
 
 
+def get_sha256(con, path: str, stat):
+    cur = con.execute(
+        """SELECT hexdigest FROM sha256_cache
+        WHERE path=? AND device=? AND inode=? AND mtime=? AND size=?""",
+        (path, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size))
+    return cur.fetchone()['hexdigest']
+
+
+def add_sha256(con, path: str, stat, digest: str):
+    con.execute(
+        """INSERT OR REPLACE INTO sha256_cache
+        (path, device, inode, mtime, size, hexdigest)
+        VALUES (?, ?, ?, ?, ?, ?)""",
+        (path, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size, digest))
+
+
 def _setup_table(con):
-    con.execute(f"""CREATE TABLE IF NOT EXISTS {_SHA256_TABLE} (
+    con.execute(f"""CREATE TABLE IF NOT EXISTS sha256_cache (
     path TEXT NOT NULL,
     device INT NOT NULL,
     inode INT NOT NULL,

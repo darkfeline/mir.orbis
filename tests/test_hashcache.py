@@ -20,15 +20,26 @@ from mir.orbis import hashcache
 
 
 @mock.patch.dict(os.environ)
-def test_connect(tmpdir):
+def test_hashcache(tmpdir):
     os.environ['XDG_CACHE_HOME'] = str(tmpdir)
+    s = _stat_result(
+        st_mode=33204,
+        st_ino=369494,
+        st_dev=48,
+        st_nlink=1,
+        st_uid=1007,
+        st_gid=1007,
+        st_size=10,
+        st_atime=1513137496,
+        st_mtime=1513137496,
+        st_ctime=1513137498)
     with hashcache.connect() as con:
-        con.execute(
-            """INSERT INTO sha256_cache
-            (path, device, inode, mtime, size, hexdigest)
-            VALUES (?, ?, ?, ?, ?, ?)""",
-            ('/foo/bar', 48, 369494, 1513137496, 10,
-             'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'))
+        hashcache.add_sha256(
+            con, '/tmp/foo', s,
+            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+        got = hashcache.get_sha256(
+            con, '/tmp/foo', s)
+    assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
 
 def test_cachedir_default():
@@ -45,3 +56,9 @@ def test_cachedir_explicit():
         os.environ['XDG_CACHE_HOME'] = '/tmp/cache'
         got = hashcache._cachedir()
     assert str(got) == '/tmp/cache/mir.orbis'
+
+
+class _stat_result:
+
+    def __init__(self, **kwargs):
+        self.__dict__ = kwargs
