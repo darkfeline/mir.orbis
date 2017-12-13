@@ -68,12 +68,16 @@ def add_file(hashdir: 'PathLike', path: 'PathLike', merge=False):
     link to the file in the hash archive if the content is the same.
     """
     logger.info('Adding file %s', path)
-    indexer = Indexer(
-        index_dir=hashdir,
+    indexer = _make_indexer(index_dir=hashdir, merge=merge)
+    indexer.add_file(path)
+
+
+def _make_indexer(index_dir: 'PathLike', merge=False):
+    return Indexer(
+        index_dir=index_dir,
         hash_func=_sha256_hash,
         path_func=_path256,
         link_func=partial(_merge_link, merge=merge))
-    indexer.add_file(path)
 
 
 class Indexer:
