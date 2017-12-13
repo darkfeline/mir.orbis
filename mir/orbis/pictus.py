@@ -107,11 +107,13 @@ def _sha256_hash(path: 'Path') -> 'str':
 
 
 def _path256(path: 'Path', digest: 'str') -> 'PurePath':
+    """Construct a hashed path with 256 subdirs for a hex hash."""
     ext = ''.join(path.suffixes)
     return PurePath(digest[:2], f'{digest[2:]}{ext}')
 
 
 def _merge_link(src: 'Path', dst: 'Path'):
+    """Merge linker."""
     if not dst.exists():
         logger.info('Storing %s to %s', src, dst)
         dst.parent.mkdir(exist_ok=True)
