@@ -19,10 +19,19 @@ from pathlib import Path
 import sqlite3
 
 
-def _cachedir():
+def sha256_cache_connect():
+    conn = sqlite3.connect(_sha256_cache_path())
+    return conn
+
+
+def _sha256_cache_path() -> Path:
+    return _cachedir() / 'sha256.db'
+
+
+def _cachedir() -> Path:
     return _xdg_cache_home() / 'mir.orbis'
 
 
-def _xdg_cache_home():
+def _xdg_cache_home() -> Path:
     return Path(os.getenv('XDG_CACHE_HOME',
                           Path(os.environ['HOME'], '.cache')))
