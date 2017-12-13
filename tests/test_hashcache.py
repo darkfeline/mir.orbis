@@ -19,6 +19,18 @@ from unittest import mock
 from mir.orbis import hashcache
 
 
+@mock.patch.dict(os.environ)
+def test_connect(tmpdir):
+    os.environ['XDG_CACHE_HOME'] = str(tmpdir)
+    with hashcache.connect() as con:
+        con.execute(
+            """INSERT INTO sha256_cache
+            (path, device, inode, mtime, size, hexdigest)
+            VALUES (?, ?, ?, ?, ?, ?)""",
+            ('/foo/bar', 48, 369494, 1513137496, 10,
+             'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'))
+
+
 def test_cachedir_default():
     with mock.patch.dict(os.environ):
         os.environ['HOME'] = '/home/yamada'

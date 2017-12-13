@@ -19,13 +19,33 @@ from pathlib import Path
 import sqlite3
 
 
-def sha256_cache_connect():
-    conn = sqlite3.connect(_sha256_cache_path())
-    return conn
+_SHA256_TABLE = 'sha256_cache'
 
 
-def _sha256_cache_path() -> Path:
-    return _cachedir() / 'sha256.db'
+def connect():
+    db = _dbpath()
+    db.parent.mkdir(parents=True, exist_ok=True)
+    con = sqlite3.connect(str(db))
+    con.row_factory = sqlite3.Row
+    _setup_table(con)
+    return con
+
+
+def _setup_table(con):
+    con.execute(f"""CREATE TABLE IF NOT EXISTS {_SHA256_TABLE} (
+    path TEXT NOT NULL,
+    device INT NOT NULL,
+    inode INT NOT NULL,
+    mtime INT NOT NULL,
+    size INT NOT NULL,
+    hexdigest TEXT NOT NULL,
+    CONSTRAINT path_u UNIQUE (path),
+    CONSTRAINT device_inode_u UNIQUE (device, inode)
+    )""")
+
+
+def _dbpath() -> Path:
+    return _cachedir() / 'hash.db'
 
 
 def _cachedir() -> Path:
