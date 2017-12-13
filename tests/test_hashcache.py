@@ -19,17 +19,17 @@ from unittest import mock
 from mir.orbis import hashcache
 
 
-def test_find_hashdir_default():
+def test_cachedir_default():
     with mock.patch.dict(os.environ):
         os.environ['HOME'] = '/home/yamada'
-        os.environ.pop('XDG_CONFIG_HOME', None)
-        got = hashcache._xdg_config_home()
-    assert str(got) == '/home/yamada/.config'
+        os.environ.pop('XDG_CACHE_HOME', None)
+        got = hashcache._cachedir()
+    assert str(got) == '/home/yamada/.cache/mir.orbis'
 
 
-def test_find_hashdir_explicit():
+def test_cachedir_explicit():
     with mock.patch.dict(os.environ):
         os.environ['HOME'] = '/home/yamada'
-        os.environ['XDG_CONFIG_HOME'] = '/tmp/config'
-        got = hashcache._xdg_config_home()
-    assert str(got) == '/tmp/config'
+        os.environ['XDG_CACHE_HOME'] = '/tmp/cache'
+        got = hashcache._cachedir()
+    assert str(got) == '/tmp/cache/mir.orbis'

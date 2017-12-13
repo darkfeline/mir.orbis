@@ -19,6 +19,10 @@ from pathlib import Path
 import sqlite3
 
 
-def _xdg_config_home():
-    return Path(os.getenv('XDG_CONFIG_HOME',
-                          Path(os.environ['HOME'], '.config')))
+def _cachedir():
+    return _xdg_cache_home() / 'mir.orbis'
+
+
+def _xdg_cache_home():
+    return Path(os.getenv('XDG_CACHE_HOME',
+                          Path(os.environ['HOME'], '.cache')))
