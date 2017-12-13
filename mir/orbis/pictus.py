@@ -89,6 +89,7 @@ class Indexer:
         self._link_func = link_func
 
     def add_file(self, path: 'PathLike'):
+        """Add a file to the index."""
         path = Path(path)
         digest: 'str' = self._hash_func(path)
         hashed_path: 'PurePath' = self._path_func(path, digest)
