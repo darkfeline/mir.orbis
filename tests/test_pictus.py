@@ -131,16 +131,3 @@ def test_add_file_with_merge_and_different_content(tmpdir):
 
     with pytest.raises(pictus.FileExistsError):
         pictus.add_file(hashdir, path, merge=True)
-
-
-def test__hashed_path(tmpdir):
-    path = tmpdir.join('tmp')
-    path.write('Philosophastra Illustrans')
-    got = pictus._hashed_path(path)
-    assert got == PurePath('8b/c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
-
-
-def test__hexdigest():
-    f = io.BytesIO('Philosophastra Illustrans'.encode())
-    got = pictus._hexdigest(f)
-    assert got == '8bc36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53'

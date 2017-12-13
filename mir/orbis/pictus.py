@@ -15,6 +15,7 @@
 """Working with hashed archives."""
 
 import filecmp
+from functools import partial
 import hashlib
 import logging
 import os
@@ -67,34 +68,59 @@ def add_file(hashdir: 'PathLike', path: 'PathLike', merge=False):
     link to the file in the hash archive if the content is the same.
     """
     logger.info('Adding file %s', path)
-    hashed_path = Path(hashdir, _hashed_path(path))
-    if not hashed_path.exists():
-        logger.info('Storing %s to %s', path, hashed_path)
-        hashed_path.parent.mkdir(exist_ok=True)
-        os.link(path, hashed_path)
-        return
-    if hashed_path.samefile(os.fspath(path)):
-        logger.info('%s already stored to %s', path, hashed_path)
-        return
-    if not (merge and filecmp.cmp(path, hashed_path, shallow=False)):
-        raise FileExistsError(f'{hashed_path} exists but different from {path}')
-    os.unlink(path)
-    os.link(hashed_path, path)
+    indexer = Indexer(
+        index_dir=hashdir,
+        hash_func=_sha256_hash,
+        path_func=_path256,
+        link_func=partial(_merge_link, merge=merge))
+    indexer.add_file(path)
 
 
-def _hashed_path(path: 'PathLike') -> PurePath:
-    """Return hashed path for a file."""
+class Indexer:
+
+    def __init__(self,
+                 index_dir: 'PathLike',
+                 hash_func: 'Callable[[Path], str]',
+                 path_func: 'Callable[[Path, str], PurePath]',
+                 link_func: 'Callable[[Path, Path], Any]'):
+        self._index_dir = Path(index_dir)
+        self._hash_func = hash_func
+        self._path_func = path_func
+        self._link_func = link_func
+
+    def add_file(self, path: 'PathLike'):
+        path = Path(path)
+        digest: 'str' = self._hash_func(path)
+        hashed_path: 'PurePath' = self._path_func(path, digest)
+        self._link_func(path, self._index_dir / hashed_path)
+
+
+def _sha256_hash(path: 'Path') -> 'str':
+    """Return hex digest for file."""
+    h = hashlib.sha256()
     with open(path, 'rb') as f:
-        digest = _hexdigest(f)
-    ext = os.path.splitext(path)[1]
+        _feed(h, f)
+    return h.hexdigest()
+
+
+def _path256(path: 'Path', digest: 'str') -> 'PurePath':
+    ext = ''.join(path.suffixes)
     return PurePath(digest[:2], f'{digest[2:]}{ext}')
 
 
-def _hexdigest(file):
-    """Return hex digest for file."""
-    h = hashlib.sha256()
-    _feed(h, file)
-    return h.hexdigest()
+def _merge_link(src: 'Path', dst: 'Path', merge=False):
+    if not dst.exists():
+        logger.info('Storing %s to %s', src, dst)
+        dst.parent.mkdir(exist_ok=True)
+        os.link(src, dst)
+        return
+    if dst.samefile(src):
+        logger.info('%s already stored to %s', src, dst)
+        return
+    if not (merge and filecmp.cmp(src, dst, shallow=False)):
+        raise FileExistsError(f'{dst} exists but different from {src}')
+    dst.unlink()
+    os.link(src, dst)
 
 
 def _feed(hasher, file):
