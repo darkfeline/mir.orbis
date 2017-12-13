@@ -99,17 +99,6 @@ def test_add_file_with_extension(tmpdir):
     assert os.path.samefile(path, hashed_path)
 
 
-def test_add_file_with_collision(tmpdir):
-    hashdir = tmpdir.mkdir('hash')
-    path = tmpdir.join('tmp')
-    path.write('Philosophastra Illustrans')
-    hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
-    hashed_path.write('Philosophastra Illustrans', ensure=True)
-
-    with pytest.raises(pictus.FileExistsError):
-        pictus.add_file(hashdir, path)
-
-
 def test_add_file_with_merge(tmpdir):
     hashdir = tmpdir.mkdir('hash')
     path = tmpdir.join('tmp')
@@ -118,11 +107,11 @@ def test_add_file_with_merge(tmpdir):
     hashed_path.write('Philosophastra Illustrans', ensure=True)
 
     assert not os.path.samefile(str(path), str(hashed_path))
-    pictus.add_file(hashdir, path, merge=True)
+    pictus.add_file(hashdir, path)
     assert os.path.samefile(str(path), str(hashed_path))
 
 
-def test_add_file_with_merge_and_different_content(tmpdir):
+def test_add_file_with_collision(tmpdir):
     hashdir = tmpdir.mkdir('hash')
     path = tmpdir.join('tmp')
     path.write('Philosophastra Illustrans')
@@ -130,4 +119,4 @@ def test_add_file_with_merge_and_different_content(tmpdir):
     hashed_path.write('Pretend hash collision', ensure=True)
 
     with pytest.raises(pictus.FileExistsError):
-        pictus.add_file(hashdir, path, merge=True)
+        pictus.add_file(hashdir, path)

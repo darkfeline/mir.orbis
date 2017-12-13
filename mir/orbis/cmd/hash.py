@@ -33,7 +33,7 @@ def main(args):
 
     hashdir = pictus.find_hashdir(args.files[0])
     logger.info('Found hash dir %s', hashdir)
-    pictus.add_all(hashdir, args.files, merge=True)
+    pictus.add_all(hashdir, args.files)
     return 0
 
 
