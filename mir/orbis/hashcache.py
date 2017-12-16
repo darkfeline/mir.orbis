@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Working with hashed archives."""
+"""Hash cache."""
 
 import os
 from pathlib import Path
