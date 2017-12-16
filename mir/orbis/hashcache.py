@@ -20,6 +20,7 @@ import sqlite3
 
 
 def connect():
+    """Connect to the user's hash cache database."""
     db = _dbpath()
     db.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(str(db))
@@ -29,14 +30,22 @@ def connect():
 
 
 def get_sha256(con, path: str, stat):
+    """Get cached SHA256 hash.
+
+    If the corresponding hash is not in the cache, raise NoHashError.
+    """
     cur = con.execute(
         """SELECT hexdigest FROM sha256_cache
         WHERE path=? AND device=? AND inode=? AND mtime=? AND size=?""",
         (path, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size))
-    return cur.fetchone()['hexdigest']
+    row = cur.fetchone()
+    if row is None:
+        raise NoHashError(path, stat)
+    return row['hexdigest']
 
 
 def add_sha256(con, path: str, stat, digest: str):
+    """Add SHA256 hash to the cache."""
     con.execute(
         """INSERT OR REPLACE INTO sha256_cache
         (path, device, inode, mtime, size, hexdigest)
@@ -58,6 +67,7 @@ def _setup_table(con):
 
 
 def _dbpath() -> Path:
+    """Return the path to the user's hash cache database."""
     return _cachedir() / 'hash.db'
 
 
@@ -68,3 +78,7 @@ def _cachedir() -> Path:
 def _xdg_cache_home() -> Path:
     return Path(os.getenv('XDG_CACHE_HOME',
                           Path(os.environ['HOME'], '.cache')))
+
+
+class NoHashError(ValueError):
+    pass

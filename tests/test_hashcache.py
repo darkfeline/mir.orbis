@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import os
-
 from unittest import mock
+
+import pytest
 
 from mir.orbis import hashcache
 
@@ -37,9 +38,27 @@ def test_hashcache(tmpdir):
         hashcache.add_sha256(
             con, '/tmp/foo', s,
             'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
-        got = hashcache.get_sha256(
-            con, '/tmp/foo', s)
+        got = hashcache.get_sha256(con, '/tmp/foo', s)
     assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+
+
+@mock.patch.dict(os.environ)
+def test_hashcache_get_missing(tmpdir):
+    os.environ['XDG_CACHE_HOME'] = str(tmpdir)
+    s = _stat_result(
+        st_mode=33204,
+        st_ino=369494,
+        st_dev=48,
+        st_nlink=1,
+        st_uid=1007,
+        st_gid=1007,
+        st_size=10,
+        st_atime=1513137496,
+        st_mtime=1513137496,
+        st_ctime=1513137498)
+    with hashcache.connect() as con:
+        with pytest.raises(hashcache.NoHashError):
+            hashcache.get_sha256(con, '/tmp/foo', s)
 
 
 def test_cachedir_default():
