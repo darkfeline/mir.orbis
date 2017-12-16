@@ -21,6 +21,8 @@ import os
 from pathlib import Path
 from pathlib import PurePath
 
+from mir.orbis import hashcache
+
 _BUFSIZE = 2 ** 20
 _HASHDIR = 'hash'
 
@@ -71,14 +73,14 @@ def add_file(hashdir: 'PathLike', path: 'PathLike'):
 
 
 def _make_indexer(index_dir: 'PathLike'):
-    return Indexer(
+    return _Indexer(
         index_dir=index_dir,
         hash_func=_sha256_hash,
         path_func=_path256,
         link_func=_merge_link)
 
 
-class Indexer:
+class _Indexer:
 
     def __init__(self,
                  index_dir: 'PathLike',
@@ -98,7 +100,21 @@ class Indexer:
         self._link_func(path, self._index_dir / hashed_path)
 
 
-def _sha256_hash(path: 'Path') -> 'str':
+class _CachedSHA256Hasher:
+
+    def __init__(self, con):
+        self._con = con
+
+    def __call__(self, path: Path):
+        try:
+            return hashcache.get_sha256(self._con, path, path.stat())
+        except hashcache.NoHashError:
+            digest = _sha256_hash(path)
+            hashcache.add_sha256(self._con, path, path.stat(), digest)
+            return digest
+
+
+def _sha256_hash(path: Path) -> str:
     """Return hex digest for file."""
     h = hashlib.sha256()
     with open(path, 'rb') as f:
@@ -106,13 +122,13 @@ def _sha256_hash(path: 'Path') -> 'str':
     return h.hexdigest()
 
 
-def _path256(path: 'Path', digest: 'str') -> 'PurePath':
+def _path256(path: Path, digest: str) -> PurePath:
     """Construct a hashed path with 256 subdirs for a hex hash."""
     ext = ''.join(path.suffixes)
     return PurePath(digest[:2], f'{digest[2:]}{ext}')
 
 
-def _merge_link(src: 'Path', dst: 'Path'):
+def _merge_link(src: Path, dst: Path):
     """Merge linker."""
     if not dst.exists():
         logger.info('Storing %s to %s', src, dst)
