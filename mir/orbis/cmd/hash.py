@@ -20,6 +20,7 @@ import logging
 from pathlib import Path
 import sys
 
+from mir.orbis import hashcache
 from mir.orbis import pictus
 
 logger = logging.getLogger(__name__)
@@ -34,8 +35,9 @@ def main(args):
 
     hashdir = pictus.find_hashdir(args.files[0])
     logger.info('Found hash dir %s', hashdir)
-    indexer = pictus.make_indexer(hashdir)
-    pictus.apply_to_all(_add_logging(indexer), args.files)
+    with hashcache.HashCache() as cache:
+        indexer = pictus.CachingIndexer(hashdir, cache)
+        pictus.apply_to_all(_add_logging(indexer), args.files)
     return 0
 
 
