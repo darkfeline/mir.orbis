@@ -61,8 +61,13 @@ def apply_to_all(func, paths: 'Iterable[PathLike]'):
             func(path)
 
 
-class CachedIndexer:
-    ...
+def CachingIndexer(hash_dir: 'PathLike', con):
+    return partial(
+        _index_file,
+        hash_dir,
+        partial(_caching_sha256_hash, con),
+        _path256,
+        _merge_link)
 
 
 def SimpleIndexer(hash_dir: 'PathLike'):
@@ -86,18 +91,14 @@ def _index_file(hash_dir: 'PathLike',
     link_func(path, hash_dir / hashed_path)
 
 
-class _CachedSHA256Hasher:
-
-    def __init__(self, con):
-        self._con = con
-
-    def __call__(self, path: Path):
-        try:
-            return hashcache.get_sha256(self._con, path, path.stat())
-        except hashcache.NoHashError:
-            digest = _sha256_hash(path)
-            hashcache.add_sha256(self._con, path, path.stat(), digest)
-            return digest
+def _caching_sha256_hash(con, path: Path) -> str:
+    """Return hex digest for file using a cache."""
+    try:
+        return hashcache.get_sha256(con, str(path), path.stat())
+    except hashcache.NoHashError:
+        digest = _sha256_hash(path)
+        hashcache.add_sha256(con, str(path), path.stat(), digest)
+        return digest
 
 
 def _sha256_hash(path: Path) -> str:

@@ -14,9 +14,11 @@
 
 import os
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
+from mir.orbis import hashcache
 from mir.orbis import pictus
 
 
@@ -119,6 +121,22 @@ def test_SimpleIndexer_with_collision(tmpdir):
     indexer = pictus.SimpleIndexer(hashdir)
     with pytest.raises(pictus.FileExistsError):
         indexer(path)
+
+
+@mock.patch.dict(os.environ)
+def test_CachingIndexer(tmpdir):
+    os.environ['XDG_CACHE_HOME'] = str(tmpdir)
+    hashdir = tmpdir.mkdir('hash')
+    path = tmpdir.join('tmp.jpg')
+    path.write('Philosophastra Illustrans')
+
+    with hashcache.connect() as con:
+        indexer = pictus.CachingIndexer(hashdir, con)
+        indexer(path)
+        indexer(path)
+
+    hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53.jpg')
+    assert os.path.samefile(path, hashed_path)
 
 
 class _TestFunc:
