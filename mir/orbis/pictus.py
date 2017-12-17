@@ -42,24 +42,6 @@ def find_hashdir(start: 'PathLike') -> Path:
         path = path.parent
 
 
-def add_all(indexer, paths: 'Iterable[PathLike]'):
-    """Add files and directories to a hash archive."""
-    for path in paths:
-        if os.path.isdir(path):
-            _add_dir(indexer, path)
-        else:
-            indexer.add_file(path)
-
-
-def _add_dir(indexer, directory: 'PathLike'):
-    """Add a directory's files to a hash archive."""
-    for root, dirs, files in os.walk(directory):
-        for filename in files:
-            path = os.path.join(root, filename)
-            logger.info('Adding file %s', path)
-            indexer.add_file(path)
-
-
 def make_indexer(hash_dir: 'PathLike'):
     return _Indexer(
         hash_dir=hash_dir,
@@ -82,10 +64,26 @@ class _Indexer:
 
     def add_file(self, path: 'PathLike'):
         """Add a file to the index."""
+        logger.info('Adding file %s', path)
         path = Path(path)
         digest: 'str' = self._hash_func(path)
         hashed_path: 'PurePath' = self._path_func(path, digest)
         self._link_func(path, self._hash_dir / hashed_path)
+
+    def add_dir(self, directory: 'PathLike'):
+        """Add a directory's files to the index."""
+        for root, dirs, files in os.walk(directory):
+            for filename in files:
+                path = os.path.join(root, filename)
+                self.add_file(path)
+
+    def add_all(self, paths: 'Iterable[PathLike]'):
+        """Add files and directories to the index."""
+        for path in paths:
+            if os.path.isdir(path):
+                self.add_dir(path)
+            else:
+                self.add_file(path)
 
 
 class _CachedSHA256Hasher:

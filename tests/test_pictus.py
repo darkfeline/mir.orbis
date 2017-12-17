@@ -48,7 +48,7 @@ def test_add_all_on_dir(tmpdir):
     path.write('Philosophastra Illustrans')
 
     indexer = pictus.make_indexer(hashdir)
-    pictus.add_all(indexer, [tmpdir])
+    indexer.add_all([tmpdir])
 
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
     assert os.path.samefile(path, hashed_path)
@@ -60,7 +60,7 @@ def test_add_all_on_file(tmpdir):
     path.write('Philosophastra Illustrans')
 
     indexer = pictus.make_indexer(hashdir)
-    pictus.add_all(indexer, [str(path)])
+    indexer.add_all([str(path)])
 
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
     assert os.path.samefile(path, hashed_path)

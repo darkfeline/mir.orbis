@@ -34,7 +34,7 @@ def main(args):
     hashdir = pictus.find_hashdir(args.files[0])
     logger.info('Found hash dir %s', hashdir)
     indexer = pictus.make_indexer(hashdir)
-    pictus.add_all(indexer, args.files)
+    indexer.add_all(args.files)
     return 0
 
 
