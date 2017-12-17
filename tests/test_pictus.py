@@ -47,7 +47,8 @@ def test_add_all_on_dir(tmpdir):
     path = tmpdir.join('tmp')
     path.write('Philosophastra Illustrans')
 
-    pictus.add_all(hashdir, [tmpdir])
+    indexer = pictus.make_indexer(hashdir)
+    pictus.add_all(indexer, [tmpdir])
 
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
     assert os.path.samefile(path, hashed_path)
@@ -58,18 +59,8 @@ def test_add_all_on_file(tmpdir):
     path = tmpdir.join('tmp')
     path.write('Philosophastra Illustrans')
 
-    pictus.add_all(hashdir, [path])
-
-    hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
-    assert os.path.samefile(path, hashed_path)
-
-
-def test_add_dir(tmpdir):
-    hashdir = tmpdir.mkdir('hash')
-    path = tmpdir.join('tmp')
-    path.write('Philosophastra Illustrans')
-
-    pictus.add_dir(hashdir, str(tmpdir))
+    indexer = pictus.make_indexer(hashdir)
+    pictus.add_all(indexer, [str(path)])
 
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
     assert os.path.samefile(path, hashed_path)
@@ -80,7 +71,8 @@ def test_add_file(tmpdir):
     path = tmpdir.join('tmp')
     path.write('Philosophastra Illustrans')
 
-    pictus.add_file(hashdir, path)
+    indexer = pictus.make_indexer(hashdir)
+    indexer.add_file(path)
 
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
     assert os.path.samefile(path, hashed_path)
@@ -91,7 +83,8 @@ def test_add_file_with_extension(tmpdir):
     path = tmpdir.join('tmp.jpg')
     path.write('Philosophastra Illustrans')
 
-    pictus.add_file(hashdir, path)
+    indexer = pictus.make_indexer(hashdir)
+    indexer.add_file(path)
 
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53.jpg')
     assert os.path.samefile(path, hashed_path)
@@ -105,7 +98,8 @@ def test_add_file_with_merge(tmpdir):
     hashed_path.write('Philosophastra Illustrans', ensure=True)
 
     assert not os.path.samefile(str(path), str(hashed_path))
-    pictus.add_file(hashdir, path)
+    indexer = pictus.make_indexer(hashdir)
+    indexer.add_file(path)
     assert os.path.samefile(str(path), str(hashed_path))
 
 
@@ -116,5 +110,6 @@ def test_add_file_with_collision(tmpdir):
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
     hashed_path.write('Pretend hash collision', ensure=True)
 
+    indexer = pictus.make_indexer(hashdir)
     with pytest.raises(pictus.FileExistsError):
-        pictus.add_file(hashdir, path)
+        indexer.add_file(path)

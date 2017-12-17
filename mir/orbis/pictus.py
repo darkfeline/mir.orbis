@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 def find_hashdir(start: 'PathLike') -> Path:
-    """Find hash archive directory."""
+    """Find hash directory."""
     path = Path(start).resolve()
     if path.is_file():
         path = path.parent
@@ -42,39 +42,27 @@ def find_hashdir(start: 'PathLike') -> Path:
         path = path.parent
 
 
-def add_all(hashdir: 'PathLike', paths: 'Iterable[PathLike]'):
+def add_all(indexer, paths: 'Iterable[PathLike]'):
     """Add files and directories to a hash archive."""
     for path in paths:
         if os.path.isdir(path):
-            add_dir(hashdir, path)
+            _add_dir(indexer, path)
         else:
-            add_file(hashdir, path)
+            indexer.add_file(path)
 
 
-def add_dir(hashdir: 'PathLike', directory: 'PathLike'):
+def _add_dir(indexer, directory: 'PathLike'):
     """Add a directory's files to a hash archive."""
     for root, dirs, files in os.walk(directory):
         for filename in files:
             path = os.path.join(root, filename)
-            add_file(hashdir, path)
+            logger.info('Adding file %s', path)
+            indexer.add_file(path)
 
 
-def add_file(hashdir: 'PathLike', path: 'PathLike'):
-    """Add a file to a hash archive.
-
-    If the file is already in the hash archive and is the same file,
-    return without doing anything else.  If it is not the same file,
-    replace the file with a hard link to the file in the hash archive if
-    the content is the same, else raise FileExistsError.
-    """
-    logger.info('Adding file %s', path)
-    indexer = _make_indexer(index_dir=hashdir)
-    indexer.add_file(path)
-
-
-def _make_indexer(index_dir: 'PathLike'):
+def make_indexer(hash_dir: 'PathLike'):
     return _Indexer(
-        index_dir=index_dir,
+        hash_dir=hash_dir,
         hash_func=_sha256_hash,
         path_func=_path256,
         link_func=_merge_link)
@@ -83,11 +71,11 @@ def _make_indexer(index_dir: 'PathLike'):
 class _Indexer:
 
     def __init__(self,
-                 index_dir: 'PathLike',
+                 hash_dir: 'PathLike',
                  hash_func: 'Callable[[Path], str]',
                  path_func: 'Callable[[Path, str], PurePath]',
                  link_func: 'Callable[[Path, Path], Any]'):
-        self._index_dir = Path(index_dir)
+        self._hash_dir = Path(hash_dir)
         self._hash_func = hash_func
         self._path_func = path_func
         self._link_func = link_func
@@ -97,7 +85,7 @@ class _Indexer:
         path = Path(path)
         digest: 'str' = self._hash_func(path)
         hashed_path: 'PurePath' = self._path_func(path, digest)
-        self._link_func(path, self._index_dir / hashed_path)
+        self._link_func(path, self._hash_dir / hashed_path)
 
 
 class _CachedSHA256Hasher:
@@ -140,8 +128,8 @@ def _merge_link(src: Path, dst: Path):
         return
     if not filecmp.cmp(src, dst, shallow=False):
         raise FileExistsError(f'{dst} exists but different from {src}')
-    dst.unlink()
-    os.link(src, dst)
+    src.unlink()
+    os.link(dst, src)
 
 
 def _feed(hasher, file):
