@@ -61,7 +61,11 @@ def apply_to_all(func, paths: 'Iterable[PathLike]'):
             func(path)
 
 
-def make_indexer(hash_dir: 'PathLike'):
+class CachedIndexer:
+    ...
+
+
+def SimpleIndexer(hash_dir: 'PathLike'):
     return partial(
         _index_file,
         hash_dir,
