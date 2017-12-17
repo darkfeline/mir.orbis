@@ -38,7 +38,7 @@ def test_find_hashdir_with_file_start(tmpdir):
 
 def test_find_hashdir_missing(tmpdir):
     start = tmpdir.ensure('foo/bar', dir=True)
-    with pytest.raises(pictus.Error):
+    with pytest.raises(pictus.NoHashDirError):
         pictus.find_hashdir(start)
 
 

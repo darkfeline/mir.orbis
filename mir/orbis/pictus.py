@@ -38,7 +38,7 @@ def find_hashdir(start: 'PathLike') -> Path:
         if _HASHDIR in os.listdir(path):
             return path / _HASHDIR
         if path.parent == path:
-            raise Error('rootdir not found')
+            raise NoHashDirError('rootdir not found')
         path = path.parent
 
 
@@ -153,9 +153,9 @@ def _feed(hasher, file):
         hasher.update(b)
 
 
-class Error(Exception):
+class NoHashDirError(ValueError):
     pass
 
 
-class FileExistsError(Exception):
+class FileExistsError(ValueError):
     pass
