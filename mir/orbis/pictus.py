@@ -23,40 +23,8 @@ from pathlib import Path
 from pathlib import PurePath
 
 _BUFSIZE = 2 ** 20
-_HASHDIR = 'hash'
 
 logger = logging.getLogger(__name__)
-
-
-def find_hashdir(start: 'PathLike') -> Path:
-    """Find hash directory."""
-    path = Path(start).resolve()
-    if path.is_file():
-        path = path.parent
-    while True:
-        if _HASHDIR in os.listdir(path):
-            return path / _HASHDIR
-        if path.parent == path:
-            raise NoHashDirError('rootdir not found')
-        path = path.parent
-
-
-def apply_to_dir(func, directory: 'PathLike'):
-    """Call a function on a directory's files."""
-    for root, dirs, files in os.walk(directory):
-        for filename in files:
-            path = os.path.join(root, filename)
-            func(path)
-
-
-def apply_to_all(func, paths: 'Iterable[PathLike]'):
-    """Call a function on files and directories."""
-    for path in paths:
-        path = os.fspath(path)
-        if os.path.isdir(path):
-            apply_to_dir(func, path)
-        else:
-            func(path)
 
 
 def CachingIndexer(hash_dir: 'PathLike', con):
@@ -124,7 +92,7 @@ def _merge_link(src: Path, dst: Path):
         logger.info('%s already stored to %s', src, dst)
         return
     if not filecmp.cmp(src, dst, shallow=False):
-        raise FileExistsError(f'{dst} exists but different from {src}')
+        raise CollisionError(src, dst)
     src.unlink()
     os.link(dst, src)
 
@@ -138,9 +106,5 @@ def _feed(hasher, file):
         hasher.update(b)
 
 
-class NoHashDirError(ValueError):
-    pass
-
-
-class FileExistsError(ValueError):
+class CollisionError(Exception):
     pass

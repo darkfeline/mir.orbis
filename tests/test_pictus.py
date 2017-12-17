@@ -13,60 +13,10 @@
 # limitations under the License.
 
 import os
-from pathlib import Path
 
 import pytest
 
 from mir.orbis import pictus
-
-
-def test_find_hashdir(tmpdir):
-    hashdir = tmpdir.mkdir('hash')
-    start = tmpdir.ensure('foo/bar/baz', dir=True)
-
-    got = pictus.find_hashdir(start)
-    assert got == Path(hashdir)
-
-
-def test_find_hashdir_with_file_start(tmpdir):
-    hashdir = tmpdir.mkdir('hash')
-    start = tmpdir.ensure('foo/bar/baz')
-
-    got = pictus.find_hashdir(start)
-    assert got == Path(hashdir)
-
-
-def test_find_hashdir_missing(tmpdir):
-    start = tmpdir.ensure('foo/bar', dir=True)
-    with pytest.raises(pictus.NoHashDirError):
-        pictus.find_hashdir(start)
-
-
-def test_apply_to_dir(tmpdir):
-    path = tmpdir.join('tmp')
-    path.write('Philosophastra Illustrans')
-
-    f = _TestFunc()
-    pictus.apply_to_dir(f, str(tmpdir))
-    assert f.args == [str(path)]
-
-
-def test_apply_to_all_dir(tmpdir):
-    path = tmpdir.join('tmp')
-    path.write('Philosophastra Illustrans')
-
-    f = _TestFunc()
-    pictus.apply_to_all(f, [str(tmpdir)])
-    assert f.args == [str(path)]
-
-
-def test_apply_to_all_file(tmpdir):
-    path = tmpdir.join('tmp')
-    path.write('Philosophastra Illustrans')
-
-    f = _TestFunc()
-    pictus.apply_to_all(f, [str(path)])
-    assert f.args == [str(path)]
 
 
 def test_SimpleIndexer(tmpdir):
@@ -117,7 +67,7 @@ def test_SimpleIndexer_with_collision(tmpdir):
     hashed_path.write('Pretend hash collision', ensure=True)
 
     indexer = pictus.SimpleIndexer(hashdir)
-    with pytest.raises(pictus.FileExistsError):
+    with pytest.raises(pictus.CollisionError):
         indexer(path)
 
 
@@ -132,12 +82,3 @@ def test_CachingIndexer(tmpdir):
 
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53.jpg')
     assert os.path.samefile(path, hashed_path)
-
-
-class _TestFunc:
-
-    def __init__(self):
-        self.args = []
-
-    def __call__(self, arg):
-        self.args.append(arg)
