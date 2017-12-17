@@ -19,51 +19,58 @@ from pathlib import Path
 import sqlite3
 
 
-def connect():
-    """Connect to the user's hash cache database."""
-    db = _dbpath()
-    db.parent.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(str(db))
-    con.row_factory = sqlite3.Row
-    _setup_table(con)
-    return con
+class HashCache:
 
+    def __init__(self, database: str = None):
+        if database is None:
+            db = _dbpath()
+            db.parent.mkdir(parents=True, exist_ok=True)
+            database = str(db)
+        self._con = con = sqlite3.connect(database)
+        con.row_factory = sqlite3.Row
+        self._setup_table(con)
 
-def get_sha256(con, path: str, stat):
-    """Get cached SHA256 hash.
+    @staticmethod
+    def _setup_table(con):
+        con.execute(f"""CREATE TABLE IF NOT EXISTS sha256_cache (
+        path TEXT NOT NULL,
+        device INT NOT NULL,
+        inode INT NOT NULL,
+        mtime INT NOT NULL,
+        size INT NOT NULL,
+        hexdigest TEXT NOT NULL,
+        CONSTRAINT path_u UNIQUE (path),
+        CONSTRAINT device_inode_u UNIQUE (device, inode)
+        )""")
 
-    If the corresponding hash is not in the cache, raise NoHashError.
-    """
-    cur = con.execute(
-        """SELECT hexdigest FROM sha256_cache
-        WHERE path=? AND device=? AND inode=? AND mtime=? AND size=?""",
-        (path, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size))
-    row = cur.fetchone()
-    if row is None:
-        raise NoHashError(path, stat)
-    return row['hexdigest']
+    def __getitem__(self, key):
+        path: str
+        path, stat = key
+        cur = self._con.execute(
+            """SELECT hexdigest FROM sha256_cache
+            WHERE path=? AND device=? AND inode=? AND mtime=? AND size=?""",
+            (path, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size))
+        row = cur.fetchone()
+        if row is None:
+            raise KeyError(path, stat)
+        return row['hexdigest']
 
+    def __setitem__(self, key, digest: str):
+        """Add SHA256 hash to the cache."""
+        path: str
+        path, stat = key
+        self._con.execute(
+            """INSERT OR REPLACE INTO sha256_cache
+            (path, device, inode, mtime, size, hexdigest)
+            VALUES (?, ?, ?, ?, ?, ?)""",
+            (path, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size, digest))
 
-def add_sha256(con, path: str, stat, digest: str):
-    """Add SHA256 hash to the cache."""
-    con.execute(
-        """INSERT OR REPLACE INTO sha256_cache
-        (path, device, inode, mtime, size, hexdigest)
-        VALUES (?, ?, ?, ?, ?, ?)""",
-        (path, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size, digest))
+    def __enter__(self):
+        return self
 
-
-def _setup_table(con):
-    con.execute(f"""CREATE TABLE IF NOT EXISTS sha256_cache (
-    path TEXT NOT NULL,
-    device INT NOT NULL,
-    inode INT NOT NULL,
-    mtime INT NOT NULL,
-    size INT NOT NULL,
-    hexdigest TEXT NOT NULL,
-    CONSTRAINT path_u UNIQUE (path),
-    CONSTRAINT device_inode_u UNIQUE (device, inode)
-    )""")
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._con.close()
+        return False
 
 
 def _dbpath() -> Path:
@@ -78,7 +85,3 @@ def _cachedir() -> Path:
 def _xdg_cache_home() -> Path:
     return Path(os.getenv('XDG_CACHE_HOME',
                           Path(os.environ['HOME'], '.cache')))
-
-
-class NoHashError(ValueError):
-    pass

@@ -21,30 +21,25 @@ from mir.orbis import hashcache
 
 
 @mock.patch.dict(os.environ)
-def test_hashcache(tmpdir):
+def test_HashCache_by_default_uses_xdg_cache_home(tmpdir):
     os.environ['XDG_CACHE_HOME'] = str(tmpdir)
-    s = _stat_result(
-        st_mode=33204,
-        st_ino=369494,
-        st_dev=48,
-        st_nlink=1,
-        st_uid=1007,
-        st_gid=1007,
-        st_size=10,
-        st_atime=1513137496,
-        st_mtime=1513137496,
-        st_ctime=1513137498)
-    with hashcache.connect() as con:
-        hashcache.add_sha256(
-            con, '/tmp/foo', s,
-            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
-        got = hashcache.get_sha256(con, '/tmp/foo', s)
-    assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+    with mock.patch('sqlite3.connect') as connect:
+        with hashcache.HashCache():
+            pass
+        connect.assert_called_with(str(tmpdir.join('mir.orbis', 'hash.db')))
 
 
 @mock.patch.dict(os.environ)
-def test_hashcache_get_missing(tmpdir):
-    os.environ['XDG_CACHE_HOME'] = str(tmpdir)
+def test_HashCache_by_default_uses_home(tmpdir):
+    os.environ['HOME'] = str(tmpdir)
+    os.environ.pop('XDG_CACHE_HOME', None)
+    with mock.patch('sqlite3.connect') as connect:
+        with hashcache.HashCache():
+            pass
+        connect.assert_called_with(str(tmpdir.join('.cache', 'mir.orbis', 'hash.db')))
+
+
+def test_HashCache(tmpdir):
     s = _stat_result(
         st_mode=33204,
         st_ino=369494,
@@ -56,25 +51,27 @@ def test_hashcache_get_missing(tmpdir):
         st_atime=1513137496,
         st_mtime=1513137496,
         st_ctime=1513137498)
-    with hashcache.connect() as con:
-        with pytest.raises(hashcache.NoHashError):
-            hashcache.get_sha256(con, '/tmp/foo', s)
+    with hashcache.HashCache(str(tmpdir.join('db'))) as c:
+        c['/tmp/foo', s] = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+        got = c['/tmp/foo', s]
+    assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
 
-def test_cachedir_default():
-    with mock.patch.dict(os.environ):
-        os.environ['HOME'] = '/home/yamada'
-        os.environ.pop('XDG_CACHE_HOME', None)
-        got = hashcache._cachedir()
-    assert str(got) == '/home/yamada/.cache/mir.orbis'
-
-
-def test_cachedir_explicit():
-    with mock.patch.dict(os.environ):
-        os.environ['HOME'] = '/home/yamada'
-        os.environ['XDG_CACHE_HOME'] = '/tmp/cache'
-        got = hashcache._cachedir()
-    assert str(got) == '/tmp/cache/mir.orbis'
+def test_HashCache_get_missing(tmpdir):
+    s = _stat_result(
+        st_mode=33204,
+        st_ino=369494,
+        st_dev=48,
+        st_nlink=1,
+        st_uid=1007,
+        st_gid=1007,
+        st_size=10,
+        st_atime=1513137496,
+        st_mtime=1513137496,
+        st_ctime=1513137498)
+    with hashcache.HashCache(str(tmpdir.join('db'))) as c:
+        with pytest.raises(KeyError):
+            c['/tmp/foo', s]
 
 
 class _stat_result:

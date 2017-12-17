@@ -22,8 +22,6 @@ import os
 from pathlib import Path
 from pathlib import PurePath
 
-from mir.orbis import hashcache
-
 _BUFSIZE = 2 ** 20
 _HASHDIR = 'hash'
 
@@ -91,13 +89,13 @@ def _index_file(hash_dir: 'PathLike',
     link_func(path, hash_dir / hashed_path)
 
 
-def _caching_sha256_hash(con, path: Path) -> str:
+def _caching_sha256_hash(cache, path: Path) -> str:
     """Return hex digest for file using a cache."""
     try:
-        return hashcache.get_sha256(con, str(path), path.stat())
-    except hashcache.NoHashError:
+        return cache[str(path), path.stat()]
+    except KeyError:
         digest = _sha256_hash(path)
-        hashcache.add_sha256(con, str(path), path.stat(), digest)
+        cache[str(path), path.stat()] = digest
         return digest
 
 
