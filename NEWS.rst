@@ -3,11 +3,20 @@ mir.orbis Release Notes
 
 This project uses `semantic versioning <http://semver.org/>`_.
 
+0.4.0 (2017-12-17)
+------------------
+
+Changed
+^^^^^^^
+
+- `hash` command now caches file hashes.  This should make it run
+  faster on previously seen files.
+
 0.3.0 (2017-11-12)
 ------------------
 
-Added
-^^^^^
+Changed
+^^^^^^^
 
 - `hash` command now merges files with same content.
 
