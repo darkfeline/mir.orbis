@@ -15,6 +15,7 @@
 """Add a file to a directory organized by content hash."""
 
 import argparse
+import functools
 import logging
 from pathlib import Path
 import sys
@@ -34,8 +35,16 @@ def main(args):
     hashdir = pictus.find_hashdir(args.files[0])
     logger.info('Found hash dir %s', hashdir)
     indexer = pictus.make_indexer(hashdir)
-    indexer.add_all(args.files)
+    pictus.apply_to_all(_add_logging(indexer), args.files)
     return 0
+
+
+def _add_logging(func):
+    @functools.wraps(func)
+    def indexer(path):
+        logger.info('Adding %s', path)
+        return func(path)
+    return indexer
 
 
 if __name__ == '__main__':

@@ -15,6 +15,7 @@
 """Working with hashed archives."""
 
 import filecmp
+from functools import partial
 import hashlib
 import logging
 import os
@@ -42,48 +43,43 @@ def find_hashdir(start: 'PathLike') -> Path:
         path = path.parent
 
 
+def apply_to_dir(func, directory: 'PathLike'):
+    """Call a function on a directory's files."""
+    for root, dirs, files in os.walk(directory):
+        for filename in files:
+            path = os.path.join(root, filename)
+            func(path)
+
+
+def apply_to_all(func, paths: 'Iterable[PathLike]'):
+    """Call a function on files and directories."""
+    for path in paths:
+        path = os.fspath(path)
+        if os.path.isdir(path):
+            apply_to_dir(func, path)
+        else:
+            func(path)
+
+
 def make_indexer(hash_dir: 'PathLike'):
-    return _Indexer(
-        hash_dir=hash_dir,
-        hash_func=_sha256_hash,
-        path_func=_path256,
-        link_func=_merge_link)
+    return partial(
+        _index_file,
+        hash_dir,
+        _sha256_hash,
+        _path256,
+        _merge_link)
 
 
-class _Indexer:
-
-    def __init__(self,
-                 hash_dir: 'PathLike',
-                 hash_func: 'Callable[[Path], str]',
-                 path_func: 'Callable[[Path, str], PurePath]',
-                 link_func: 'Callable[[Path, Path], Any]'):
-        self._hash_dir = Path(hash_dir)
-        self._hash_func = hash_func
-        self._path_func = path_func
-        self._link_func = link_func
-
-    def add_file(self, path: 'PathLike'):
-        """Add a file to the index."""
-        logger.info('Adding file %s', path)
-        path = Path(path)
-        digest: 'str' = self._hash_func(path)
-        hashed_path: 'PurePath' = self._path_func(path, digest)
-        self._link_func(path, self._hash_dir / hashed_path)
-
-    def add_dir(self, directory: 'PathLike'):
-        """Add a directory's files to the index."""
-        for root, dirs, files in os.walk(directory):
-            for filename in files:
-                path = os.path.join(root, filename)
-                self.add_file(path)
-
-    def add_all(self, paths: 'Iterable[PathLike]'):
-        """Add files and directories to the index."""
-        for path in paths:
-            if os.path.isdir(path):
-                self.add_dir(path)
-            else:
-                self.add_file(path)
+def _index_file(hash_dir: 'PathLike',
+                hash_func: 'Callable[[Path], str]',
+                path_func: 'Callable[[Path, str], PurePath]',
+                link_func: 'Callable[[Path, Path], Any]',
+                path: 'PathLike'):
+    hash_dir = Path(hash_dir)
+    path = Path(path)
+    digest: 'str' = hash_func(path)
+    hashed_path: 'PurePath' = path_func(path, digest)
+    link_func(path, hash_dir / hashed_path)
 
 
 class _CachedSHA256Hasher:
