@@ -34,13 +34,10 @@ class HashCache:
     def _setup_table(con):
         con.execute(f"""CREATE TABLE IF NOT EXISTS sha256_cache (
         path TEXT NOT NULL,
-        device INT NOT NULL,
-        inode INT NOT NULL,
         mtime INT NOT NULL,
         size INT NOT NULL,
         hexdigest TEXT NOT NULL,
-        CONSTRAINT path_u UNIQUE (path),
-        CONSTRAINT device_inode_u UNIQUE (device, inode)
+        CONSTRAINT path_u UNIQUE (path)
         )""")
 
     def __getitem__(self, key):
@@ -48,8 +45,8 @@ class HashCache:
         path, stat = key
         cur = self._con.execute(
             """SELECT hexdigest FROM sha256_cache
-            WHERE path=? AND device=? AND inode=? AND mtime=? AND size=?""",
-            (path, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size))
+            WHERE path=? AND mtime=? AND size=?""",
+            (path, stat.st_mtime, stat.st_size))
         row = cur.fetchone()
         if row is None:
             raise KeyError(path, stat)
@@ -61,9 +58,9 @@ class HashCache:
         path, stat = key
         self._con.execute(
             """INSERT OR REPLACE INTO sha256_cache
-            (path, device, inode, mtime, size, hexdigest)
-            VALUES (?, ?, ?, ?, ?, ?)""",
-            (path, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size, digest))
+            (path, mtime, size, hexdigest)
+            VALUES (?, ?, ?, ?)""",
+            (path, stat.st_mtime, stat.st_size, digest))
 
     def __enter__(self):
         return self

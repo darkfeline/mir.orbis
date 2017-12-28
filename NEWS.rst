@@ -3,6 +3,14 @@ mir.orbis Release Notes
 
 This project uses `semantic versioning <http://semver.org/>`_.
 
+0.5.0 (2017-12-27)
+------------------
+
+Changed
+-------
+
+- Hash cache no longer track device and inode.
+
 0.4.0 (2017-12-17)
 ------------------
 
