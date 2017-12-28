@@ -53,7 +53,6 @@ class HashCache:
         return row['hexdigest']
 
     def __setitem__(self, key, digest: str):
-        """Add SHA256 hash to the cache."""
         path: str
         path, stat = key
         self._con.execute(
