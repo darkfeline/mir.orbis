@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 def main(args):
     parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--preload-db', action='store_true')
     parser.add_argument('files', nargs="+", type=Path, metavar='FILES_OR_DIRS')
     args = parser.parse_args(args)
 
@@ -38,7 +39,8 @@ def main(args):
 
     hashdir = _find_hashdir(args.files[0])
     logger.info('Found hash dir %s', hashdir)
-    with hashcache.HashCache() as cache:
+    Cache = hashcache.MemHashCache if args.preload_db else hashcache.HashCache
+    with Cache() as cache:
         indexer = pictus.CachingIndexer(hashdir, cache)
         _apply_to_all(_add_logging(indexer), args.files)
     return 0

@@ -6,6 +6,11 @@ This project uses `semantic versioning <http://semver.org/>`_.
 0.5.0 (2017-12-27)
 ------------------
 
+Added
+-----
+
+- `-p` option to load cache into memory for speed.
+
 Changed
 -------
 

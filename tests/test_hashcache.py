@@ -17,29 +17,27 @@ from unittest import mock
 
 import pytest
 
-from mir.orbis import hashcache
-
 
 @mock.patch.dict(os.environ)
-def test_HashCache_by_default_uses_xdg_cache_home(tmpdir):
+def test_Cache_by_default_uses_xdg_cache_home(Cache, tmpdir):
     os.environ['XDG_CACHE_HOME'] = str(tmpdir)
     with mock.patch('sqlite3.connect') as connect:
-        with hashcache.HashCache():
+        with Cache():
             pass
         connect.assert_called_with(str(tmpdir.join('mir.orbis', 'hash.db')))
 
 
 @mock.patch.dict(os.environ)
-def test_HashCache_by_default_uses_home(tmpdir):
+def test_Cache_by_default_uses_home(Cache, tmpdir):
     os.environ['HOME'] = str(tmpdir)
     os.environ.pop('XDG_CACHE_HOME', None)
     with mock.patch('sqlite3.connect') as connect:
-        with hashcache.HashCache():
+        with Cache():
             pass
         connect.assert_called_with(str(tmpdir.join('.cache', 'mir.orbis', 'hash.db')))
 
 
-def test_HashCache(tmpdir):
+def test_Cache(Cache, tmpdir):
     s1 = _stat_result(
         st_mode=33204,
         st_ino=369494,
@@ -62,12 +60,12 @@ def test_HashCache(tmpdir):
         st_atime=1513137496,
         st_mtime=1513137496,
         st_ctime=1513137498)
-    with hashcache.HashCache(str(tmpdir.join('db'))) as c:
+    with Cache(str(tmpdir.join('db'))) as c:
         c['/tmp/foo', s1] = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
         got = c['/tmp/foo', s1]
         # Should return set value
         assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
-    with hashcache.HashCache(str(tmpdir.join('db'))) as c:
+    with Cache(str(tmpdir.join('db'))) as c:
         got = c['/tmp/foo', s1]
         # Should return cached value
         assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
@@ -80,7 +78,7 @@ def test_HashCache(tmpdir):
         assert got == 'f3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
 
-def test_HashCache_get_missing(tmpdir):
+def test_Cache_get_missing(Cache, tmpdir):
     s = _stat_result(
         st_mode=33204,
         st_ino=369494,
@@ -92,7 +90,7 @@ def test_HashCache_get_missing(tmpdir):
         st_atime=1513137496,
         st_mtime=1513137496,
         st_ctime=1513137498)
-    with hashcache.HashCache(str(tmpdir.join('db'))) as c:
+    with Cache(str(tmpdir.join('db'))) as c:
         with pytest.raises(KeyError):
             c['/tmp/foo', s]
 
