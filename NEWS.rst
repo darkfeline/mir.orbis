@@ -9,7 +9,12 @@ This project uses `semantic versioning <http://semver.org/>`_.
 Changed
 -------
 
-- Hash cache no longer track device and inode.
+- Hash cache no longer tracks device and inode.
+
+Fixed
+-----
+
+- Fixed not committing hash cache.
 
 0.4.0 (2017-12-17)
 ------------------

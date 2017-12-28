@@ -39,7 +39,7 @@ def test_HashCache_by_default_uses_home(tmpdir):
         connect.assert_called_with(str(tmpdir.join('.cache', 'mir.orbis', 'hash.db')))
 
 
-def test_HashCache_replacement(tmpdir):
+def test_HashCache(tmpdir):
     s1 = _stat_result(
         st_mode=33204,
         st_ino=369494,
@@ -65,10 +65,18 @@ def test_HashCache_replacement(tmpdir):
     with hashcache.HashCache(str(tmpdir.join('db'))) as c:
         c['/tmp/foo', s1] = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
         got = c['/tmp/foo', s1]
+        # Should return set value
         assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
-
+    with hashcache.HashCache(str(tmpdir.join('db'))) as c:
+        got = c['/tmp/foo', s1]
+        # Should return cached value
+        assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+        # Should not have value for new stat
+        with pytest.raises(KeyError):
+            c['/tmp/foo', s2]
         c['/tmp/foo', s2] = 'f3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
         got = c['/tmp/foo', s2]
+        # Should return new value
         assert got == 'f3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
 

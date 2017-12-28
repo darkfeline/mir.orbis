@@ -60,6 +60,7 @@ class HashCache:
             (path, mtime, size, hexdigest)
             VALUES (?, ?, ?, ?)""",
             (path, stat.st_mtime, stat.st_size, digest))
+        self._con.commit()
 
     def __enter__(self):
         return self
