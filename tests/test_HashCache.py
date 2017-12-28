@@ -39,8 +39,8 @@ def test_HashCache_by_default_uses_home(tmpdir):
         connect.assert_called_with(str(tmpdir.join('.cache', 'mir.orbis', 'hash.db')))
 
 
-def test_HashCache(tmpdir):
-    s = _stat_result(
+def test_HashCache_replacement(tmpdir):
+    s1 = _stat_result(
         st_mode=33204,
         st_ino=369494,
         st_dev=48,
@@ -51,10 +51,25 @@ def test_HashCache(tmpdir):
         st_atime=1513137496,
         st_mtime=1513137496,
         st_ctime=1513137498)
+    s2 = _stat_result(
+        st_mode=33204,
+        st_ino=369494,
+        st_dev=48,
+        st_nlink=1,
+        st_uid=1007,
+        st_gid=1007,
+        st_size=11,
+        st_atime=1513137496,
+        st_mtime=1513137496,
+        st_ctime=1513137498)
     with hashcache.HashCache(str(tmpdir.join('db'))) as c:
-        c['/tmp/foo', s] = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
-        got = c['/tmp/foo', s]
-    assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+        c['/tmp/foo', s1] = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+        got = c['/tmp/foo', s1]
+        assert got == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+
+        c['/tmp/foo', s2] = 'f3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+        got = c['/tmp/foo', s2]
+        assert got == 'f3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
 
 def test_HashCache_get_missing(tmpdir):
