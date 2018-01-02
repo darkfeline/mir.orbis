@@ -3,21 +3,29 @@ mir.orbis Release Notes
 
 This project uses `semantic versioning <http://semver.org/>`_.
 
+0.6.0 (2018-01-01)
+------------------
+
+Removed
+^^^^^^^
+
+- `-p` option (did not improve performance).
+
 0.5.0 (2017-12-27)
 ------------------
 
 Added
------
+^^^^^
 
 - `-p` option to load cache into memory for speed.
 
 Changed
--------
+^^^^^^^
 
 - Hash cache no longer tracks device and inode.
 
 Fixed
------
+^^^^^
 
 - Fixed not committing hash cache.
 

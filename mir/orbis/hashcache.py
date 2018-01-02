@@ -17,7 +17,6 @@
 import os
 from pathlib import Path
 import sqlite3
-from typing import NamedTuple
 
 
 class HashCache:
@@ -69,45 +68,6 @@ class HashCache:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._con.close()
         return False
-
-
-class MemHashCache(HashCache):
-
-    """Cache that loads entire database into memory for speed."""
-
-    def __init__(self, database: str = None):
-        super().__init__(database)
-        self._cache = {}
-        cur = self._con.execute("SELECT path, mtime, size, hexdigest FROM sha256_cache")
-        for row in cur:
-            self._cache[row['path']] = _HashInfo(
-                mtime=row['mtime'],
-                size=row['size'],
-                digest=row['hexdigest'])
-
-    def __getitem__(self, key):
-        path: str
-        path, stat = key
-        info = self._cache[path]
-        if not (stat.st_mtime == info.mtime
-                and stat.st_size == info.size):
-            raise KeyError(path, stat)
-        return info.digest
-
-    def __setitem__(self, key, digest: str):
-        super().__setitem__(key, digest)
-        path: str
-        path, stat = key
-        self._cache[path] = _HashInfo(
-            mtime=stat.st_mtime,
-            size=stat.st_size,
-            digest=digest)
-
-
-class _HashInfo(NamedTuple):
-    mtime: int
-    size: int
-    digest: str
 
 
 def _dbpath() -> Path:

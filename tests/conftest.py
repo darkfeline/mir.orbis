@@ -17,7 +17,6 @@ from mir.orbis import hashcache
 
 _CACHE_CLASSES = (
     hashcache.HashCache,
-    hashcache.MemHashCache,
 )
 
 
