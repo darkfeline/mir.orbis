@@ -48,14 +48,13 @@ def _index_file(index_dir: 'PathLike',
                 path: 'PathLike'):
     """Add a file to an index.
 
-    This is a very generic function for hashing a file and putting it
-    into an index directory.
+    This is a generic function for hashing a file and putting it into an
+    index directory.
 
     hash_func is called with the file's path and should return the
     file's hash.
     """
-    index_dir = Path(index_dir)
-    path = Path(path)
+    index_dir, path = Path(index_dir), Path(path)
     digest: 'str' = hash_func(path)
     ext = ''.join(path.suffixes)
     _merge_link(path, index_dir / digest[:2] / f'{digest[2:]}{ext}')
