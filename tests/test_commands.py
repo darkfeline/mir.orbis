@@ -20,6 +20,14 @@ import pytest
 from mir.orbis import commands
 
 
+def test_bucket_without_args(tmpdir):
+    tmpdir.mkdir('atelier')
+    tmpdir.ensure('atelier sophie')
+    with tmpdir.as_cwd():
+        commands.bucket()
+    assert not tmpdir.join('atelier sophie').exists()
+
+
 def test_find_index_dir(tmpdir):
     index_dir = tmpdir.mkdir('index')
     start = tmpdir.ensure('foo/bar/baz', dir=True)
