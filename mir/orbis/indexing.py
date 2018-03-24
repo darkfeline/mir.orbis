@@ -20,7 +20,6 @@ import hashlib
 import logging
 import os
 from pathlib import Path
-from pathlib import PurePath
 
 _BUFSIZE = 2 ** 20
 
