@@ -16,4 +16,5 @@ import fire
 
 from mir.orbis import commands
 
-fire.Fire(commands)
+if __name__ == '__main__':
+    fire.Fire(commands)
