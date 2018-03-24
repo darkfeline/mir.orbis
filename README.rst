@@ -22,7 +22,7 @@ Example::
 
     $ cd tmp
     $ touch some-pic.jpg
-    $ mkdir hash
+    $ mkdir index
     $ python3.6 -m mir.orbis index .
     # Now some-pic.jpg will be linked to
     # index/ff/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.jpg
