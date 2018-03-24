@@ -71,3 +71,28 @@ def _apply_to_dir(func, directory: 'PathLike'):
         for filename in files:
             path = os.path.join(root, filename)
             func(path)
+
+
+def bucket(root: str = None, *files):
+    """Bucket files by common filename substring."""
+    logging.basicConfig(level='DEBUG')
+    if root is None:
+        root = os.getcwd()
+    if not files:
+        files = _unbucketed(root)
+    buckets = _buckets(root)
+    for path in files:
+        for bucket in buckets:
+            if bucket in path:
+                logger.info('Moving %s to %s', path, bucket)
+                os.rename(path, os.path.join(root, bucket, os.path.basename(path)))
+
+
+def _buckets(path: str) -> 'List[str]':
+    return sorted(e.name for e in os.scandir(path) if e.is_dir())
+
+
+def _unbucketed(path: str) -> 'Iterable[str]':
+    for e in os.scandir(path):
+        if e.is_file():
+            yield os.path.join(path, e.name)

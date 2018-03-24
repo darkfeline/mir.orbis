@@ -3,6 +3,14 @@ mir.orbis Release Notes
 
 This project uses `semantic versioning <http://semver.org/>`_.
 
+0.8.0 ()
+--------
+
+Added
+^^^^^
+
+- Added `bucket` command.
+
 0.7.0 (2018-03-24)
 ------------------
 
