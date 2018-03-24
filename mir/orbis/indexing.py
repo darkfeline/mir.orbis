@@ -26,12 +26,12 @@ _BUFSIZE = 2 ** 20
 logger = logging.getLogger(__name__)
 
 
-def CachingIndexer(index_dir: 'PathLike', con):
+def CachingIndexer(index_dir: 'PathLike', cache):
     """Returns a one argument callable that indexes files to index_dir."""
     return partial(
         _index_file,
         index_dir,
-        partial(_caching_sha256_hash, con))
+        partial(_caching_sha256_hash, cache))
 
 
 def SimpleIndexer(index_dir: 'PathLike'):
