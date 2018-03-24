@@ -19,26 +19,26 @@ import pytest
 from mir.orbis import commands
 
 
-def test_find_hashdir(tmpdir):
-    hashdir = tmpdir.mkdir('hash')
+def test_find_index_dir(tmpdir):
+    index_dir = tmpdir.mkdir('index')
     start = tmpdir.ensure('foo/bar/baz', dir=True)
 
-    got = commands._find_hashdir(start)
-    assert got == Path(hashdir)
+    got = commands._find_index_dir(start)
+    assert got == Path(index_dir)
 
 
-def test_find_hashdir_with_file_start(tmpdir):
-    hashdir = tmpdir.mkdir('hash')
+def test_find_index_dir_with_file_start(tmpdir):
+    index_dir = tmpdir.mkdir('index')
     start = tmpdir.ensure('foo/bar/baz')
 
-    got = commands._find_hashdir(start)
-    assert got == Path(hashdir)
+    got = commands._find_index_dir(start)
+    assert got == Path(index_dir)
 
 
-def test_find_hashdir_missing(tmpdir):
+def test_find_index_dir_missing(tmpdir):
     start = tmpdir.ensure('foo/bar', dir=True)
     with pytest.raises(Exception):
-        commands._find_hashdir(start)
+        commands._find_index_dir(start)
 
 
 def test_apply_to_dir(tmpdir):

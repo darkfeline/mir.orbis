@@ -13,6 +13,7 @@ Changed
   - `python -m mir.orbis.cmd.hash` is now `python -m mir.orbis hash`.
 - `hash` command is now `index`.
 - `pictus` module renamed to `indexing`.
+- The index/hash dir is renamed from `hash` to `index`.
 
 0.6.0 (2018-01-01)
 ------------------

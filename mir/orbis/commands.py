@@ -20,7 +20,7 @@ from pathlib import Path
 from mir.orbis import hashcache
 from mir.orbis import indexing
 
-_HASHDIR = 'hash'
+_INDEX_DIR = 'index'
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 def index(*files):
     logging.basicConfig(level='DEBUG')
     files = [Path(f) for f in files]
-    hashdir = _find_hashdir(files[0])
-    logger.info('Found hash dir %s', hashdir)
+    hashdir = _find_index_dir(files[0])
+    logger.info('Found index dir %s', hashdir)
     with hashcache.HashCache() as cache:
         indexer = indexing.CachingIndexer(hashdir, cache)
         _apply_to_all(_add_logging(indexer), files)
@@ -43,16 +43,15 @@ def _add_logging(func):
     return indexer
 
 
-def _find_hashdir(start: 'PathLike') -> Path:
-    """Find hash directory."""
+def _find_index_dir(start: 'PathLike') -> Path:
     path = Path(start).resolve()
     if path.is_file():
         path = path.parent
     while True:
-        if _HASHDIR in os.listdir(path):
-            return path / _HASHDIR
+        if _INDEX_DIR in os.listdir(path):
+            return path / _INDEX_DIR
         if path.parent == path:
-            raise Exception('rootdir not found')
+            raise Exception('index dir not found')
         path = path.parent
 
 

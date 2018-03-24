@@ -25,6 +25,6 @@ Example::
     $ mkdir hash
     $ python3.6 -m mir.orbis index .
     # Now some-pic.jpg will be linked to
-    # hash/ff/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.jpg
+    # index/ff/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.jpg
 
 The name is a reference to Orbis Pictus.
