@@ -16,7 +16,7 @@ import os
 
 import pytest
 
-from mir.orbis import pictus
+from mir.orbis import indexing
 
 
 def test_SimpleIndexer(tmpdir):
@@ -24,7 +24,7 @@ def test_SimpleIndexer(tmpdir):
     path = tmpdir.join('tmp.jpg')
     path.write('Philosophastra Illustrans')
 
-    indexer = pictus.SimpleIndexer(hashdir)
+    indexer = indexing.SimpleIndexer(hashdir)
     indexer(path)
 
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53.jpg')
@@ -39,7 +39,7 @@ def test_SimpleIndexer_when_already_indexed(tmpdir):
     hashed_path.join('..').ensure_dir()
     os.link(str(path), str(hashed_path))
 
-    indexer = pictus.SimpleIndexer(hashdir)
+    indexer = indexing.SimpleIndexer(hashdir)
     indexer(path)
 
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
@@ -54,7 +54,7 @@ def test_SimpleIndexer_with_merge(tmpdir):
     hashed_path.write('Philosophastra Illustrans', ensure=True)
 
     assert not os.path.samefile(str(path), str(hashed_path))
-    indexer = pictus.SimpleIndexer(hashdir)
+    indexer = indexing.SimpleIndexer(hashdir)
     indexer(path)
     assert os.path.samefile(str(path), str(hashed_path))
 
@@ -66,8 +66,8 @@ def test_SimpleIndexer_with_collision(tmpdir):
     hashed_path = hashdir.join('8b', 'c36727b5aa2a78e730bfd393836b246c4d565e4dc3e4f413df26e26656bb53')
     hashed_path.write('Pretend hash collision', ensure=True)
 
-    indexer = pictus.SimpleIndexer(hashdir)
-    with pytest.raises(pictus.CollisionError):
+    indexer = indexing.SimpleIndexer(hashdir)
+    with pytest.raises(indexing.CollisionError):
         indexer(path)
 
 
@@ -76,7 +76,7 @@ def test_CachingIndexer(tmpdir):
     path = tmpdir.join('tmp.jpg')
     path.write('Philosophastra Illustrans')
 
-    indexer = pictus.CachingIndexer(hashdir, {})
+    indexer = indexing.CachingIndexer(hashdir, {})
     indexer(path)
     indexer(path)
 

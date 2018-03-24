@@ -22,7 +22,7 @@ from pathlib import Path
 import sys
 
 from mir.orbis import hashcache
-from mir.orbis import pictus
+from mir.orbis import indexing
 
 _HASHDIR = 'hash'
 
@@ -39,7 +39,7 @@ def main(args):
     hashdir = _find_hashdir(args.files[0])
     logger.info('Found hash dir %s', hashdir)
     with hashcache.HashCache() as cache:
-        indexer = pictus.CachingIndexer(hashdir, cache)
+        indexer = indexing.CachingIndexer(hashdir, cache)
         _apply_to_all(_add_logging(indexer), args.files)
     return 0
 

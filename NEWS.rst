@@ -3,6 +3,14 @@ mir.orbis Release Notes
 
 This project uses `semantic versioning <http://semver.org/>`_.
 
+0.7.0 ()
+--------
+
+Changed
+^^^^^^^
+
+- `pictus` module renamed to `indexing`.
+
 0.6.0 (2018-01-01)
 ------------------
 
