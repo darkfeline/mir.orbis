@@ -25,7 +25,7 @@ _HASHDIR = 'hash'
 logger = logging.getLogger(__name__)
 
 
-def hash(*files):
+def index(*files):
     logging.basicConfig(level='DEBUG')
     files = [Path(f) for f in files]
     hashdir = _find_hashdir(files[0])
