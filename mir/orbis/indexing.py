@@ -27,34 +27,34 @@ _BUFSIZE = 2 ** 20
 logger = logging.getLogger(__name__)
 
 
-def CachingIndexer(hash_dir: 'PathLike', con):
+def CachingIndexer(index_dir: 'PathLike', con):
     return partial(
         _index_file,
-        hash_dir,
+        index_dir,
         partial(_caching_sha256_hash, con),
         _path256,
         _merge_link)
 
 
-def SimpleIndexer(hash_dir: 'PathLike'):
+def SimpleIndexer(index_dir: 'PathLike'):
     return partial(
         _index_file,
-        hash_dir,
+        index_dir,
         _sha256_hash,
         _path256,
         _merge_link)
 
 
-def _index_file(hash_dir: 'PathLike',
+def _index_file(index_dir: 'PathLike',
                 hash_func: 'Callable[[Path], str]',
                 path_func: 'Callable[[Path, str], PurePath]',
                 link_func: 'Callable[[Path, Path], Any]',
                 path: 'PathLike'):
-    hash_dir = Path(hash_dir)
+    index_dir = Path(index_dir)
     path = Path(path)
     digest: 'str' = hash_func(path)
     hashed_path: 'PurePath' = path_func(path, digest)
-    link_func(path, hash_dir / hashed_path)
+    link_func(path, index_dir / hashed_path)
 
 
 def _caching_sha256_hash(cache, path: Path) -> str:
