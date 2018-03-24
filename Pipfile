@@ -7,7 +7,6 @@ verify_ssl = true
 "mir.xdg" = "~=1.0"
 
 [dev-packages]
-pytest = "==3.2.2"
-"pytest-catchlog" = "==1.2.2"
-"pytest-cov" = "==2.5.1"
-twine = "~=1.9"
+pytest = "~=3.4"
+"pytest-cov" = "~=2.5"
+"twine" = "~=1.10"

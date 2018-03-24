@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from pathlib import Path
 
 import pytest
@@ -69,6 +70,7 @@ def test_apply_to_all_file(tmpdir):
 
 
 def test_add_logging(caplog):
+    caplog.set_level(logging.DEBUG)
     f = commands._add_logging(_TestFunc())
     f('foo')
     got = caplog.records
