@@ -33,8 +33,7 @@ def CachingIndexer(index_dir: 'PathLike', con):
         _index_file,
         index_dir,
         partial(_caching_sha256_hash, con),
-        _path256,
-        _merge_link)
+        _path256)
 
 
 def SimpleIndexer(index_dir: 'PathLike'):
@@ -43,14 +42,12 @@ def SimpleIndexer(index_dir: 'PathLike'):
         _index_file,
         index_dir,
         _sha256_hash,
-        _path256,
-        _merge_link)
+        _path256)
 
 
 def _index_file(index_dir: 'PathLike',
                 hash_func: 'Callable[[Path], str]',
                 path_func: 'Callable[[Path, str], PurePath]',
-                link_func: 'Callable[[Path, Path], Any]',
                 path: 'PathLike'):
     """Add a file to an index.
 
@@ -63,15 +60,12 @@ def _index_file(index_dir: 'PathLike',
     path_func is called with the file's path and the hash returned from
     hash_func.  path_func should return the path the file should be
     linked to relative to index_dir.
-
-    link_func is called with the file's path and the path to link the
-    file to under index_dir.
     """
     index_dir = Path(index_dir)
     path = Path(path)
     digest: 'str' = hash_func(path)
     hashed_path: 'PurePath' = path_func(path, digest)
-    link_func(path, index_dir / hashed_path)
+    _merge_link(path, index_dir / hashed_path)
 
 
 def _caching_sha256_hash(cache, path: Path) -> str:
