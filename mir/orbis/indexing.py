@@ -32,8 +32,7 @@ def CachingIndexer(index_dir: 'PathLike', con):
     return partial(
         _index_file,
         index_dir,
-        partial(_caching_sha256_hash, con),
-        _path256)
+        partial(_caching_sha256_hash, con))
 
 
 def SimpleIndexer(index_dir: 'PathLike'):
@@ -41,13 +40,11 @@ def SimpleIndexer(index_dir: 'PathLike'):
     return partial(
         _index_file,
         index_dir,
-        _sha256_hash,
-        _path256)
+        _sha256_hash)
 
 
 def _index_file(index_dir: 'PathLike',
                 hash_func: 'Callable[[Path], str]',
-                path_func: 'Callable[[Path, str], PurePath]',
                 path: 'PathLike'):
     """Add a file to an index.
 
@@ -56,16 +53,12 @@ def _index_file(index_dir: 'PathLike',
 
     hash_func is called with the file's path and should return the
     file's hash.
-
-    path_func is called with the file's path and the hash returned from
-    hash_func.  path_func should return the path the file should be
-    linked to relative to index_dir.
     """
     index_dir = Path(index_dir)
     path = Path(path)
     digest: 'str' = hash_func(path)
-    hashed_path: 'PurePath' = path_func(path, digest)
-    _merge_link(path, index_dir / hashed_path)
+    ext = ''.join(path.suffixes)
+    _merge_link(path, index_dir / digest[:2] / f'{digest[2:]}{ext}')
 
 
 def _caching_sha256_hash(cache, path: Path) -> str:
@@ -87,12 +80,6 @@ def _sha256_hash(path: Path) -> str:
     with open(path, 'rb') as f:
         _feed(h, f)
     return h.hexdigest()
-
-
-def _path256(path: Path, digest: str) -> PurePath:
-    """Construct a hashed path with 256 subdirs for a hex hash."""
-    ext = ''.join(path.suffixes)
-    return PurePath(digest[:2], f'{digest[2:]}{ext}')
 
 
 def _merge_link(src: Path, dst: Path):
