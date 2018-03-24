@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 
 def index(*files):
     logging.basicConfig(level='DEBUG')
+    if not files:
+        return
     files = [Path(f) for f in files]
     hashdir = _find_index_dir(files[0])
     logger.info('Found index dir %s', hashdir)

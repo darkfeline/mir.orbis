@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-from pathlib import Path
+import os
 
 import pytest
 
@@ -47,68 +46,33 @@ def test_bucket_without_matching_dir(tmpdir):
     assert not tmpdir.join('atelier/atelier sophie').exists()
 
 
-def test_find_index_dir(tmpdir):
-    index_dir = tmpdir.mkdir('index')
-    start = tmpdir.ensure('foo/bar/baz', dir=True)
-
-    got = commands._find_index_dir(start)
-    assert got == Path(index_dir)
+def test_index_without_files(tmpdir):
+    with tmpdir.as_cwd():
+        commands.index()
 
 
-def test_find_index_dir_with_file_start(tmpdir):
-    index_dir = tmpdir.mkdir('index')
-    start = tmpdir.ensure('foo/bar/baz')
-
-    got = commands._find_index_dir(start)
-    assert got == Path(index_dir)
-
-
-def test_find_index_dir_missing(tmpdir):
-    start = tmpdir.ensure('foo/bar', dir=True)
-    with pytest.raises(Exception):
-        commands._find_index_dir(start)
+def test_index_without_index_dir(tmpdir):
+    tmpdir.join('foo').write('foo')
+    with tmpdir.as_cwd():
+        with pytest.raises(Exception):
+            commands.index('foo')
 
 
-def test_apply_to_dir(tmpdir):
-    path = tmpdir.join('tmp')
-    path.write('Philosophastra Illustrans')
-
-    f = _TestFunc()
-    commands._apply_to_dir(f, str(tmpdir))
-    assert f.args == [str(path)]
-
-
-def test_apply_to_all_dir(tmpdir):
-    path = tmpdir.join('tmp')
-    path.write('Philosophastra Illustrans')
-
-    f = _TestFunc()
-    commands._apply_to_all(f, [str(tmpdir)])
-    assert f.args == [str(path)]
+def test_index_file(tmpdir):
+    tmpdir.join('foo.txt').write('foo')
+    tmpdir.mkdir('index')
+    with tmpdir.as_cwd():
+        commands.index('foo.txt')
+        assert os.path.samefile(
+            'index/2c/26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae.txt',
+            'foo.txt')
 
 
-def test_apply_to_all_file(tmpdir):
-    path = tmpdir.join('tmp')
-    path.write('Philosophastra Illustrans')
-
-    f = _TestFunc()
-    commands._apply_to_all(f, [str(path)])
-    assert f.args == [str(path)]
-
-
-def test_add_logging(caplog):
-    caplog.set_level(logging.DEBUG)
-    f = commands._add_logging(_TestFunc())
-    f('foo')
-    got = caplog.records
-    assert len(got) == 1
-    assert got[0].message == 'Adding foo'
-
-
-class _TestFunc:
-
-    def __init__(self):
-        self.args = []
-
-    def __call__(self, arg):
-        self.args.append(arg)
+def test_index_dir(tmpdir):
+    tmpdir.mkdir('spam').join('foo.txt').write('foo')
+    tmpdir.mkdir('index')
+    with tmpdir.as_cwd():
+        commands.index('spam')
+        assert os.path.samefile(
+            'index/2c/26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae.txt',
+            'spam/foo.txt')
