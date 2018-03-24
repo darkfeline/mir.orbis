@@ -44,5 +44,7 @@ setup(
     ],
 
     packages=['mir.orbis'],
-    install_requires=[],
+    install_requires=[
+        'mir.xdg~=1.0',
+    ],
 )

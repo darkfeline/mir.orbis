@@ -18,6 +18,8 @@ import os
 from pathlib import Path
 import sqlite3
 
+from mir import xdg
+
 
 class HashCache:
 
@@ -86,9 +88,4 @@ def _dbpath() -> Path:
 
 
 def _cachedir() -> Path:
-    return _xdg_cache_home() / 'mir.orbis'
-
-
-def _xdg_cache_home() -> Path:
-    return Path(os.getenv('XDG_CACHE_HOME',
-                          Path(os.environ['HOME'], '.cache')))
+    return xdg.CACHE_HOME / 'mir.orbis'

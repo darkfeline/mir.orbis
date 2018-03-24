@@ -12,29 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+from pathlib import Path
 from unittest import mock
 
 import pytest
 
 
-@mock.patch.dict(os.environ)
-def test_Cache_by_default_uses_xdg_cache_home(Cache, tmpdir):
-    os.environ['XDG_CACHE_HOME'] = str(tmpdir)
-    with mock.patch('sqlite3.connect') as connect:
+def test_Cache_uses_xdg_cache_home(Cache, tmpdir):
+    with mock.patch('mir.xdg.CACHE_HOME', Path(str(tmpdir))), \
+         mock.patch('sqlite3.connect') as connect:
         with Cache():
             pass
         connect.assert_called_with(str(tmpdir.join('mir.orbis', 'hash.db')))
-
-
-@mock.patch.dict(os.environ)
-def test_Cache_by_default_uses_home(Cache, tmpdir):
-    os.environ['HOME'] = str(tmpdir)
-    os.environ.pop('XDG_CACHE_HOME', None)
-    with mock.patch('sqlite3.connect') as connect:
-        with Cache():
-            pass
-        connect.assert_called_with(str(tmpdir.join('.cache', 'mir.orbis', 'hash.db')))
 
 
 def test_Cache(Cache, tmpdir):
