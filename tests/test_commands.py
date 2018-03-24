@@ -26,6 +26,25 @@ def test_bucket_without_args(tmpdir):
     with tmpdir.as_cwd():
         commands.bucket()
     assert not tmpdir.join('atelier sophie').exists()
+    assert tmpdir.join('atelier/atelier sophie').exists()
+
+
+def test_bucket_with_args(tmpdir):
+    tmpdir.mkdir('atelier')
+    tmpdir.ensure('atelier sophie')
+    with tmpdir.as_cwd():
+        commands.bucket(str(tmpdir), 'atelier sophie')
+    assert not tmpdir.join('atelier sophie').exists()
+    assert tmpdir.join('atelier/atelier sophie').exists()
+
+
+def test_bucket_without_matching_dir(tmpdir):
+    tmpdir.mkdir('surge')
+    tmpdir.ensure('atelier sophie')
+    with tmpdir.as_cwd():
+        commands.bucket()
+    assert tmpdir.join('atelier sophie').exists()
+    assert not tmpdir.join('atelier/atelier sophie').exists()
 
 
 def test_find_index_dir(tmpdir):
