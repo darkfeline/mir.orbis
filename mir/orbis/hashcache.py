@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Hash cache."""
+"""This module implements caching for file hashes."""
 
 import os
 from pathlib import Path
@@ -20,6 +20,16 @@ import sqlite3
 
 
 class HashCache:
+
+    """Cache for file SHA-256 hashes.
+
+    Hashes are stored in a SQLite database along with the file's path,
+    mtime, and size.  The file's mtime and size are checked
+    automatically.
+
+    HashCache implements a basic mapping API for access and a context
+    manager API for closing the database connection.
+    """
 
     def __init__(self, database: str = None):
         if database is None:
