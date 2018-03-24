@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Allen Li
+# Copyright (C) 2018 Allen Li
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Add a file to a directory organized by content hash."""
-
-import argparse
 import functools
 import logging
 import os
 from pathlib import Path
-import sys
 
 from mir.orbis import hashcache
 from mir.orbis import indexing
@@ -29,19 +25,14 @@ _HASHDIR = 'hash'
 logger = logging.getLogger(__name__)
 
 
-def main(args):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('files', nargs="+", type=Path, metavar='FILES_OR_DIRS')
-    args = parser.parse_args(args)
-
+def hash(*files):
     logging.basicConfig(level='DEBUG')
-
-    hashdir = _find_hashdir(args.files[0])
+    files = [Path(f) for f in files]
+    hashdir = _find_hashdir(files[0])
     logger.info('Found hash dir %s', hashdir)
     with hashcache.HashCache() as cache:
         indexer = indexing.CachingIndexer(hashdir, cache)
-        _apply_to_all(_add_logging(indexer), args.files)
-    return 0
+        _apply_to_all(_add_logging(indexer), files)
 
 
 def _add_logging(func):
@@ -81,7 +72,3 @@ def _apply_to_dir(func, directory: 'PathLike'):
         for filename in files:
             path = os.path.join(root, filename)
             func(path)
-
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))

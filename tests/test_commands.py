@@ -16,14 +16,14 @@ from pathlib import Path
 
 import pytest
 
-from mir.orbis.cmd import hash
+from mir.orbis import commands
 
 
 def test_find_hashdir(tmpdir):
     hashdir = tmpdir.mkdir('hash')
     start = tmpdir.ensure('foo/bar/baz', dir=True)
 
-    got = hash._find_hashdir(start)
+    got = commands._find_hashdir(start)
     assert got == Path(hashdir)
 
 
@@ -31,14 +31,14 @@ def test_find_hashdir_with_file_start(tmpdir):
     hashdir = tmpdir.mkdir('hash')
     start = tmpdir.ensure('foo/bar/baz')
 
-    got = hash._find_hashdir(start)
+    got = commands._find_hashdir(start)
     assert got == Path(hashdir)
 
 
 def test_find_hashdir_missing(tmpdir):
     start = tmpdir.ensure('foo/bar', dir=True)
     with pytest.raises(Exception):
-        hash._find_hashdir(start)
+        commands._find_hashdir(start)
 
 
 def test_apply_to_dir(tmpdir):
@@ -46,7 +46,7 @@ def test_apply_to_dir(tmpdir):
     path.write('Philosophastra Illustrans')
 
     f = _TestFunc()
-    hash._apply_to_dir(f, str(tmpdir))
+    commands._apply_to_dir(f, str(tmpdir))
     assert f.args == [str(path)]
 
 
@@ -55,7 +55,7 @@ def test_apply_to_all_dir(tmpdir):
     path.write('Philosophastra Illustrans')
 
     f = _TestFunc()
-    hash._apply_to_all(f, [str(tmpdir)])
+    commands._apply_to_all(f, [str(tmpdir)])
     assert f.args == [str(path)]
 
 
@@ -64,12 +64,12 @@ def test_apply_to_all_file(tmpdir):
     path.write('Philosophastra Illustrans')
 
     f = _TestFunc()
-    hash._apply_to_all(f, [str(path)])
+    commands._apply_to_all(f, [str(path)])
     assert f.args == [str(path)]
 
 
 def test_add_logging(caplog):
-    f = hash._add_logging(_TestFunc())
+    f = commands._add_logging(_TestFunc())
     f('foo')
     got = caplog.records
     assert len(got) == 1

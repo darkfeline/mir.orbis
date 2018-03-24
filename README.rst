@@ -23,7 +23,7 @@ Example::
     $ cd tmp
     $ touch some-pic.jpg
     $ mkdir hash
-    $ python3.6 -m mir.orbis.cmd.hash .
+    $ python3.6 -m mir.orbis hash .
     # Now some-pic.jpg will be linked to
     # hash/ff/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.jpg
 

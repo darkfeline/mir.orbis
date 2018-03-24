@@ -9,6 +9,8 @@ This project uses `semantic versioning <http://semver.org/>`_.
 Changed
 ^^^^^^^
 
+- mir.orbis now uses Fire for commands.
+  - `python -m mir.orbis.cmd.hash` is now `python -m mir.orbis hash`.
 - `pictus` module renamed to `indexing`.
 
 0.6.0 (2018-01-01)
