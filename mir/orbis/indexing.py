@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Working with hashed archives."""
+"""File indexing."""
 
 import filecmp
 from functools import partial
@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 def CachingIndexer(index_dir: 'PathLike', con):
+    """Returns a one argument callable that indexes files to index_dir."""
     return partial(
         _index_file,
         index_dir,
@@ -37,6 +38,7 @@ def CachingIndexer(index_dir: 'PathLike', con):
 
 
 def SimpleIndexer(index_dir: 'PathLike'):
+    """Returns a one argument callable that indexes files to index_dir."""
     return partial(
         _index_file,
         index_dir,
@@ -50,6 +52,21 @@ def _index_file(index_dir: 'PathLike',
                 path_func: 'Callable[[Path, str], PurePath]',
                 link_func: 'Callable[[Path, Path], Any]',
                 path: 'PathLike'):
+    """Add a file to an index.
+
+    This is a very generic function for hashing a file and putting it
+    into an index directory.
+
+    hash_func is called with the file's path and should return the
+    file's hash.
+
+    path_func is called with the file's path and the hash returned from
+    hash_func.  path_func should return the path the file should be
+    linked to relative to index_dir.
+
+    link_func is called with the file's path and the path to link the
+    file to under index_dir.
+    """
     index_dir = Path(index_dir)
     path = Path(path)
     digest: 'str' = hash_func(path)
@@ -58,7 +75,10 @@ def _index_file(index_dir: 'PathLike',
 
 
 def _caching_sha256_hash(cache, path: Path) -> str:
-    """Return hex digest for file using a cache."""
+    """Return hex digest for file using a cache.
+
+    cache should support __getitem__ and __setitem__.
+    """
     try:
         return cache[str(path), path.stat()]
     except KeyError:
@@ -82,7 +102,13 @@ def _path256(path: Path, digest: str) -> PurePath:
 
 
 def _merge_link(src: Path, dst: Path):
-    """Merge linker."""
+    """Merge link.
+
+    Try to link src to dst.  If dst exists and is the same file as src,
+    do nothing.  If dst exists, is a different file, and has the same
+    contents, replace dst with a link to src.  If dst exists and has
+    different contents, raise CollisionError.
+    """
     if not dst.exists():
         logger.info('Storing %s to %s', src, dst)
         dst.parent.mkdir(exist_ok=True)
