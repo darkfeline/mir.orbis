@@ -3,8 +3,8 @@ mir.orbis Release Notes
 
 This project uses `semantic versioning <http://semver.org/>`_.
 
-0.7.0 ()
---------
+0.7.0 (2018-03-24)
+------------------
 
 Changed
 ^^^^^^^
