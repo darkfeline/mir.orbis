@@ -14,7 +14,6 @@
 
 """This module implements caching for file hashes."""
 
-import os
 from pathlib import Path
 import sqlite3
 
